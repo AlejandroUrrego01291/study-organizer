@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  dailyGoalHours   Float @default(1)
+  monthlyGoalHours Float @default(20)
+  annualGoalHours  Float @default(240)
+
+  pomodoroMinutes    Int @default(25)
+  shortBreakMinutes  Int @default(5)
+  longBreakMinutes   Int @default(20)
+  sessionsBeforeLong Int @default(4)
+
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  cards        Card[]
+  categories   Category[]
+  series       Series[]
+  badges       UserBadge[]
+  certificates Certificate[]
+  sessions     StudySession[]
+
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#6366f1")
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards  Card[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+model Series {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards  Card[]
+
+  @@unique([userId, name])
+  @@map("series")
+}
+
+model Card {
+  id        String     @id @default(cuid())
+  title     String
+  status    CardStatus @default(DO)
+  studyType StudyType  @default(VIDEO)
+
+  currentMinute Int?
+  currentPage   Int?
+  resourceUrl   String?
+  source        String?
+  notes         String?
+
+  createdAt    DateTime  @default(now())
+  startedAt    DateTime?
+  lastActiveAt DateTime?
+  completedAt  DateTime?
+
+  totalStudySeconds Int  @default(0)
+  pomodoroMinutes   Int?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  seriesId String?
+  series   Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+
+  studySessions StudySession[]
+
+  @@map("cards")
+}
+
+model StudySession {
+  id              String    @id @default(cuid())
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  durationSeconds Int       @default(0)
+
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("study_sessions")
+}
+
+model Certificate {
+  id           String    @id @default(cuid())
+  name         String
+  fileUrl      String
+  fileName     String
+  fileSize     Int
+  issuedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  seriesName   String?
+  categoryName String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("certificates")
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  key         BadgeKey @unique
+  name        String
+  description String
+  icon        String
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  earnedAt DateTime @default(now())
+  count    Int      @default(1)
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId String
+  badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+enum CardStatus {
+  DO
+  DOING
+  DONE
+}
+
+enum StudyType {
+  VIDEO
+  AUDIO
+  TEXT
+}
+
+enum BadgeKey {
+  STAR
+  MEDAL
+  TROPHY
+  EPIC_LION
+}
