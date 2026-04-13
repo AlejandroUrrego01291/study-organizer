@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { getUserId, unauthorized } from "@/lib/session"
 
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const userId = await getUserId()
-    if (!userId) return unauthorized()
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    }
 
     const { id } = await params
     const { durationSeconds } = await req.json()
@@ -17,15 +19,16 @@ export async function POST(
     }
 
     const card = await prisma.card.findUnique({ where: { id } })
-    if (!card || card.userId !== userId) {
+    if (!card || card.userId !== session.user.id) {
         return NextResponse.json({ error: "No encontrado" }, { status: 404 })
     }
 
+    // Crear la sesión y actualizar el total acumulado
     const [studySession, updatedCard] = await prisma.$transaction([
         prisma.studySession.create({
             data: {
                 cardId: id,
-                userId,
+                userId: session.user.id,
                 durationSeconds,
                 endedAt: new Date(),
             },

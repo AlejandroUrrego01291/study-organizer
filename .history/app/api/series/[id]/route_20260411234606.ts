@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { getUserId, unauthorized } from "@/lib/session"
 
 export async function PATCH(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const userId = await getUserId()
-    if (!userId) return unauthorized()
+    const session = await auth()
+    if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
     const { id } = await params
     const { name } = await req.json()
 
     const series = await prisma.series.findUnique({ where: { id } })
-    if (!series || series.userId !== userId) {
+    if (!series || series.userId !== session.user.id) {
         return NextResponse.json({ error: "No encontrado" }, { status: 404 })
     }
 
@@ -21,6 +21,7 @@ export async function PATCH(
         where: { id },
         data: { name },
     })
+
     return NextResponse.json(updated)
 }
 
@@ -28,12 +29,12 @@ export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const userId = await getUserId()
-    if (!userId) return unauthorized()
+    const session = await auth()
+    if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
     const { id } = await params
     const series = await prisma.series.findUnique({ where: { id } })
-    if (!series || series.userId !== userId) {
+    if (!series || series.userId !== session.user.id) {
         return NextResponse.json({ error: "No encontrado" }, { status: 404 })
     }
 
