@@ -1,9 +1,8 @@
-import NextAuth, { NextAuthOptions } from "next-auth"
+import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { validateUser } from "@/lib/auth-helpers"
-import { getServerSession } from "next-auth/next"
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.AUTH_SECRET,
     session: { strategy: "jwt" },
     pages: {
@@ -20,12 +19,14 @@ export const authOptions: NextAuthOptions = {
             return token
         },
         async session({ session, token }) {
-            session.user = {
-                ...session.user,
-                id: token.id as string,
-                email: token.email as string,
-                name: token.name as string,
-            } as any
+            if (token) {
+                session.user = {
+                    ...session.user,
+                    id: token.id as string,
+                    email: token.email as string,
+                    name: token.name as string,
+                } as any
+            }
             return session
         },
     },
@@ -45,13 +46,4 @@ export const authOptions: NextAuthOptions = {
             },
         }),
     ],
-}
-
-export async function auth() {
-    return getServerSession(authOptions)
-}
-
-export async function signOut() {
-    const { redirect } = await import("next/navigation")
-    redirect("/login")
-}
+})
