@@ -23,7 +23,7 @@ export default async function MainLayout({
     const pathname = headersList.get("x-invoke-path") || ""
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-100 to-gray-50 flex w-full overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-zinc-100 to-gray-50 flex">
             <aside className="hidden md:flex w-72 bg-white/95 backdrop-blur-xl border-r border-gray-100 shadow-xl flex-col fixed h-full z-20">
                 <div className="p-8 border-b border-gray-100">
                     <div className="flex items-center gap-4">
