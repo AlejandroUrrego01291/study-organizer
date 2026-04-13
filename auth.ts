@@ -5,7 +5,6 @@ import { validateUser } from "@/lib/auth-helpers"
 export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.AUTH_SECRET,
     session: { strategy: "jwt" },
-    trustHost: true,
     pages: {
         signIn: "/login",
         error: "/login",
@@ -21,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         async session({ session, token }) {
             if (token) {
-                session.user.id = token.id as string
+                (session.user as any).id = token.id as string
                 session.user.email = token.email as string
                 session.user.name = token.name as string
             }
