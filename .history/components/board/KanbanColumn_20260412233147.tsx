@@ -44,7 +44,7 @@ export default function KanbanColumn({
     const styles = columnStyles[status]
 
     return (
-        <div className={`rounded-2xl border ${styles.border} ${styles.bg} p-4 flex flex-col gap-3 min-h-[400px] w-full min-w-0 overflow-hidden`}>
+        <div className={`rounded-2xl border ${styles.border} ${styles.bg} p-4 flex flex-col gap-3 min-h-[500px]`}>
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
