@@ -204,9 +204,6 @@ export default function PomodoroTimer({
         if (intervalRef.current) clearInterval(intervalRef.current)
         setIsRunning(false)
         if (currentSessionSeconds > 0) saveSession(currentSessionSeconds)
-        setCurrentSessionSeconds(0)
-        setPhase("idle")
-        setSecondsLeft(focusMinutes * 60)
     }
 
     function handleReset() {
@@ -305,7 +302,7 @@ export default function PomodoroTimer({
                             className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm text-base"
                         >
                             <Play size={18} fill="white" />
-                            {phase === "idle" ? "Iniciar" : "Continuar"}
+                            {currentSessionSeconds > 0 || phase !== "idle" ? "Continuar" : "Iniciar"}
                         </button>
                     ) : (
                         <button
